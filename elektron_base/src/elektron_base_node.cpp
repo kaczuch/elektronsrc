@@ -156,10 +156,10 @@ int main(int argc, char** argv) {
 				// Send command frame to Elektron
 				CommPort->write(txBuf, txCnt);
 			}
-			p->update();
-			p->updateOdometry();
-			p->getOdometry(x, y, th);
-			p->getVelocity(xvel, thvel);
+	//		p->update();
+	//		p->updateOdometry();
+	//		p->getOdometry(x, y, th);
+	//		p->getVelocity(xvel, thvel);
 								x = 0;
 								y = 0;
 								th = 0;
@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
 			odom.twist.twist.angular.z = thvel;
 
 			//publish the message
-			odom_pub.publish(odom);
+	//		odom_pub.publish(odom);
 
 			ros::spinOnce();
 			loop_rate.sleep();

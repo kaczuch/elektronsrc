@@ -54,11 +54,11 @@ void twistCallback(const geometry_msgs::TwistConstPtr& msg)
 	double rotational_term = msg->angular.z * AXLE_LENGTH / 2.0;
 
 	//wyliczenie predkosci kol	
-	//double rvel = ((msg->linear.x + rotational_term) * ENC_TICKS) / (2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE);
-	//double lvel = ((msg->linear.x - rotational_term) * ENC_TICKS) / (2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE);
+    double rvel = ((msg->linear.x + rotational_term) * ENC_TICKS) / (2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE);
+    double lvel = ((msg->linear.x - rotational_term) * ENC_TICKS) / (2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE);
 
-    double rvel = msg->linear.x;
-    double lvel = msg->linear.x;
+    //double rvel = msg->linear.x;
+    //double lvel = msg->linear.x;
     // czy skalowanie w ten sposob nie wpłynie na charakterystyke ruchu?
 
 	if (rvel > MAX_VEL)

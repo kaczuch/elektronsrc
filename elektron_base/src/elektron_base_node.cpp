@@ -5,48 +5,65 @@
 #include <ros/console.h>
 #include <pthread.h>
 #include "serialcomm/serialcomm.hpp"
-#include "nfv2_config.h"
 #include "nf/nfv2.h"
 #include "math.h"
 
+#define TIMEOUT 100
+
 // wheel diameter in SI units [m]
 #define WHEEL_DIAM 0.1
+
 // axle length in SI units [m]
-#define AXLE_LENGTH 0.355
+#define AXLE_LENGTH 0.335
 
 // regulator rate in SI units [Hz]
 #define REGULATOR_RATE 100
 
 // maximum velocity, in internal units
-#define MAX_VEL 5500
+#define MAX_VEL 100000
+
 // number of encoder ticks per single wheel rotation
-#define ENC_TICKS 4000
+#define ENC_TICKS 20000
 
 ros::Time cmd_time;
 
 NF_STRUCT_ComBuf	NFComBuf;
 SerialComm		*CommPort;
-uint8_t txBuf[256];
-uint8_t txCnt;
-uint8_t rxBuf[256];
-uint8_t rxCnt;
-uint8_t commandArray[256];
-uint8_t commandCnt;
-uint8_t rxCommandArray[256];
-uint8_t rxCommandCnt;
+uint8_t txBuf[256];	//dane wysylane do plytki
+uint8_t txCnt;		//dlugosc danych wysylanych do plytki
+uint8_t rxBuf[256];	//dane odebrane do plytki
+uint8_t rxCnt;		//dlugosc danych odebranych od plytki
+uint8_t commandArray[256];	//tablica polecen do sterownika
+uint8_t commandCnt;		//stopien zapelnienia tablicy polecen do sterownika
+uint8_t rxCommandArray[256];	
+uint8_t rxCommandCnt;		
 
-void readDeviceVitalsTimerCallback(const ros::TimerEvent&) {
+int timeoutCount = 0;
+int left = 0;
+
+void readDeviceVitalsTimerCallback(const ros::TimerEvent&) 
+{
 	commandArray[commandCnt++] = NF_COMMAND_ReadDeviceVitals;
-//	ROS_INFO("Added ReadDeviceVitals Command");
+	commandArray[commandCnt++] = NF_COMMAND_ReadDrivesPosition;
+	ROS_INFO("Wheel speed: %d, %d", NFComBuf.ReadDrivesPosition.data[0], NFComBuf.ReadDrivesPosition.data[1]);
 }
 
-void twistCallback(const geometry_msgs::TwistConstPtr& msg) {
-	double rotational_term = msg->angular.z * 0.335 / 2.0;
-	double rvel = (msg->linear.x + rotational_term) * 4000 / M_PI / 0.314;
-	double lvel = (msg->linear.x - rotational_term) * 4000 / M_PI / 0.314;
+void twistCallback(const geometry_msgs::TwistConstPtr& msg) 
+{
+	//wyliczenie proporcji skretu do ruchu postepowego
+	double rotational_term = msg->angular.z * AXLE_LENGTH / 2.0;
+
+	//wyliczenie predkosci kol	
+	//double rvel = ((msg->linear.x + rotational_term) * ENC_TICKS) / (2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE);
+	//double lvel = ((msg->linear.x - rotational_term) * ENC_TICKS) / (2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE);
+
+    double rvel = msg->linear.x;
+    double lvel = msg->linear.x;
+    // czy skalowanie w ten sposob nie wpłynie na charakterystyke ruchu?
 
 	if (rvel > MAX_VEL)
-		rvel = MAX_VEL;
+
+        rvel = MAX_VEL;
 	else if (rvel < -MAX_VEL)
 		rvel = -MAX_VEL;
 
@@ -58,31 +75,39 @@ void twistCallback(const geometry_msgs::TwistConstPtr& msg) {
 	NFComBuf.SetDrivesSpeed.data[0] = lvel;
 	NFComBuf.SetDrivesSpeed.data[1] = rvel;
 	commandArray[commandCnt++] = NF_COMMAND_SetDrivesSpeed;
-	ROS_INFO("Added SetDrivesSpeed Command %d, %d", NFComBuf.SetDrivesSpeed.data[0], NFComBuf.SetDrivesSpeed.data[1]);
+	if(left != lvel)
+	{
+		left = lvel;
+		ROS_INFO("Added SetDrivesSpeed Command %d, %d", NFComBuf.SetDrivesSpeed.data[0], NFComBuf.SetDrivesSpeed.data[1]);
+	}
 	
 	NFComBuf.SetDrivesMode.data[0] = NF_DrivesMode_SPEED;
 	NFComBuf.SetDrivesMode.data[1] = NF_DrivesMode_SPEED;
 	commandArray[commandCnt++] = NF_COMMAND_SetDrivesMode;
-	ROS_INFO("Added SetDrivesMode Command NF_DrivesMode_SPEED, NF_DrivesMode_SPEED");
+	//ROS_INFO("Added SetDrivesMode Command NF_DrivesMode_SPEED, NF_DrivesMode_SPEED");
 }
 
 void *listener(void *p)
 {
-	while(1) {
+	while(1) 
+	{
 		if(rxCnt == 255)
 			rxCnt = 0;
 		rxBuf[rxCnt] = CommPort->readOneByte();
-		//if(CommPort->read(&(rxBuf[rxCnt]), 1) > 0){
-//		ROS_INFO("RECEIVED %x", rxBuf[rxCnt]);
-		if(NF_Interpreter(&NFComBuf, rxBuf, &rxCnt, rxCommandArray, &rxCommandCnt) > 0){
-//			ROS_INFO("Message Received!");
-		}
+		//if(CommPort->read(&(rxBuf[rxCnt]), 1) > 0)
+		//{
+			//ROS_INFO("RECEIVED %x", rxBuf[rxCnt]);
+			if(NF_Interpreter(&NFComBuf, rxBuf, &rxCnt, rxCommandArray, &rxCommandCnt) > 0)
+			{
+				//ROS_INFO("Message Received!");
+			}
 		//}
 	}
 	pthread_exit(NULL);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
 	ros::init(argc, argv, "elektron_base_node");
 	ros::NodeHandle n;
 	ros::NodeHandle nh("~");
@@ -95,22 +120,27 @@ int main(int argc, char** argv) {
 	ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry> ("odom", 1);
 	tf::TransformBroadcaster odom_broadcaster;
 	ros::Subscriber twist_sub = n.subscribe("cmd_vel", 1, &twistCallback);
-	ros::Rate loop_rate(100);
+	ros::Rate loop_rate(200);
 	std::string dev;
 
-	if (!nh.getParam("device", dev)) {
+	if (!nh.getParam("device", dev)) 
+	{
 		dev = "/dev/ttyACM0";
 	}
-	if (!nh.getParam("publish_odom_tf", publish_odom_tf)) {
+	if (!nh.getParam("publish_odom_tf", publish_odom_tf)) 
+	{
 		publish_odom_tf = false;
 	}
-	if (!nh.getParam("dump", dump)) {
+	if (!nh.getParam("dump", dump)) 
+	{
 		dump = false;
 	}
-	if (!nh.getParam("lin_scale", ls)) {
+	if (!nh.getParam("lin_scale", ls)) 
+	{
                 ls = 1.0;
         }
-	if (!nh.getParam("rot_scale", rs)) {
+	if (!nh.getParam("rot_scale", rs)) 
+	{
                 rs = 1.0;
         }
 
@@ -127,12 +157,14 @@ int main(int argc, char** argv) {
     
         CommPort = new SerialComm(dev);
 
-	if (! (CommPort->isConnected()) ) {
+	if (! (CommPort->isConnected()) ) 
+	{
 		ROS_INFO("connection failed");
 		ROS_ERROR("Connection to device %s failed", dev.c_str());
 		return 0;
 	}
-	else {
+	else 
+	{
 		ROS_INFO("connection ok");
 		
 		pthread_t listenerThread;
@@ -143,34 +175,56 @@ int main(int argc, char** argv) {
 			
 		ros::Timer timer1 = n.createTimer(ros::Duration(1.0), readDeviceVitalsTimerCallback);
 		
-		while (ros::ok()) {
+		while (ros::ok()) 
+		{
 			double x, y, th, xvel, thvel;
 
 			ros::Time current_time = ros::Time::now();
 			
 			// If communication with Elektron requested
-			if(commandCnt > 0) {
+			if(commandCnt > 0) 
+			{
 				txCnt = NF_MakeCommandFrame(&NFComBuf, txBuf, (const uint8_t*)commandArray, commandCnt, NF_RobotAddress);
 				// Clear communication request
 				commandCnt = 0;
 				// Send command frame to Elektron
 				CommPort->write(txBuf, txCnt);
+				timeoutCount = 0;
+			}else
+			{
+				if(timeoutCount < TIMEOUT)
+				{
+					txCnt = NF_MakeCommandFrame(&NFComBuf, txBuf, (const uint8_t*)commandArray, commandCnt, NF_RobotAddress);
+					CommPort->write(txBuf, txCnt);
+					commandCnt = 0;					
+					timeoutCount++;
+				}
+				else
+				{
+					NFComBuf.SetDrivesSpeed.data[0] = 0;
+				        NFComBuf.SetDrivesSpeed.data[1] = 0;
+				        commandArray[commandCnt++] = NF_COMMAND_SetDrivesSpeed;
+
+ 				        NFComBuf.SetDrivesMode.data[0] = NF_DrivesMode_SPEED;
+       					NFComBuf.SetDrivesMode.data[1] = NF_DrivesMode_SPEED;
+				        commandArray[commandCnt++] = NF_COMMAND_SetDrivesMode;
+					txCnt = NF_MakeCommandFrame(&NFComBuf, txBuf, (const uint8_t*)commandArray, commandCnt, NF_RobotAddress);
+                                        CommPort->write(txBuf, txCnt);
+					commandCnt = 0;
+				}
 			}
 
-//			p->updateOdometry();
-//			p->getOdometry(x, y, th);
-//			p->getVelocity(xvel, thvel);
-								x = 0;
-								y = 0;
-								th = 0;
-								xvel = 0;
-								thvel = 0;
+			x = 0;
+			y = 0;
+			th = 0;
+			xvel = 0;
+			thvel = 0;
 
 			//since all odometry is 6DOF we'll need a quaternion created from yaw
 			geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
 
-
-			if (publish_odom_tf) {
+			if (publish_odom_tf) 
+			{
 				//first, we'll publish the transform over tf
 				odom_trans.header.stamp = current_time;
 
@@ -206,7 +260,7 @@ int main(int argc, char** argv) {
 			odom.twist.twist.angular.z = thvel;
 
 			//publish the message
-//			odom_pub.publish(odom);
+			//odom_pub.publish(odom);
 
 			ros::spinOnce();
 			loop_rate.sleep();

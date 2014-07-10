@@ -116,7 +116,7 @@ include_directories(
    ${catkin_LIBRARIES}
  )
 target_link_libraries(elektron_base_node
-  elektron nfv2conf serialcomm nfv2
+  nfv2conf serialcomm nfv2
  )
 
 #############

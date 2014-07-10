@@ -85,6 +85,7 @@ void ElektronTeleopKeyboard::keyboardLoop() {
 
 
 	for (;;) {
+		dirty = false;
 		// get the next event from the keyboard
 		if (read(kfd, &c, 1) < 0) {
 			perror("read():");
@@ -99,36 +100,44 @@ void ElektronTeleopKeyboard::keyboardLoop() {
 		case KEYCODE_W:
 			vel_.linear.x = l_scale_ * walk_scale_;
 			dirty = true;
+		//	std::cout << "w"<< std::endl;
 			break;
 		case KEYCODE_S:
 			vel_.linear.x = -l_scale_ * walk_scale_;
 			dirty = true;
+		//	std::cout <<"s" << std::endl;
 			break;
 		case KEYCODE_A:
 			vel_.angular.z = a_scale_ * walk_scale_;
 			dirty = true;
+		//	std::cout <<"a"<< std::endl;
 			break;
 		case KEYCODE_D:
 			vel_.angular.z = -a_scale_ * walk_scale_;
 			dirty = true;
+		//	std::cout << "d" << std::endl;
 			break;
 
 		// Running
 		case KEYCODE_W_CAP:
 			vel_.linear.x = l_scale_;
 			dirty = true;
+		//	std::cout <<"W"<<std::endl;
 			break;
 		case KEYCODE_S_CAP:
 			vel_.linear.x = -l_scale_;
 			dirty = true;
+		//	std::cout << "S"<<std::endl;
 			break;
 		case KEYCODE_A_CAP:
 			vel_.angular.z = a_scale_;
 			dirty = true;
+		//	std::cout << "A"<<std::endl;
 			break;
 		case KEYCODE_D_CAP:
 			vel_.angular.z = -a_scale_;
 			dirty = true;
+		//	std::cout<< "D"<<std::endl;
 			break;
 
 		// Stop on space
@@ -136,6 +145,7 @@ void ElektronTeleopKeyboard::keyboardLoop() {
 			vel_.linear.x = 0;
 			vel_.angular.z = 0;
 			dirty = true;
+		//	std::cout << "SPACE"<<std::endl;
 			break;
 		}
 

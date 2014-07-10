@@ -213,12 +213,24 @@ int main(int argc, char** argv)
 					commandCnt = 0;
 				}
 			}
+<<<<<<< HEAD
 
 			x = 0;
 			y = 0;
 			th = 0;
 			xvel = 0;
 			thvel = 0;
+=======
+	//		p->update();
+	//		p->updateOdometry();
+	//		p->getOdometry(x, y, th);
+	//		p->getVelocity(xvel, thvel);
+								x = 0;
+								y = 0;
+								th = 0;
+								xvel = 0;
+								thvel = 0;
+>>>>>>> 463660c1f3568aa9b7bc8f3c6d0eb6f6b58e2411
 
 			//since all odometry is 6DOF we'll need a quaternion created from yaw
 			geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
@@ -260,7 +272,11 @@ int main(int argc, char** argv)
 			odom.twist.twist.angular.z = thvel;
 
 			//publish the message
+<<<<<<< HEAD
 			//odom_pub.publish(odom);
+=======
+	//		odom_pub.publish(odom);
+>>>>>>> 463660c1f3568aa9b7bc8f3c6d0eb6f6b58e2411
 
 			ros::spinOnce();
 			loop_rate.sleep();

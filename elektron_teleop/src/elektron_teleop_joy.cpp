@@ -41,7 +41,11 @@ void ElektronTeleopJoy::publish() {
 void ElektronTeleopJoy::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
 	vel.angular.z = a_scale_ * joy->axes[angular_];
 	vel.linear.x = l_scale_ * joy->axes[linear_];
+<<<<<<< HEAD
     //vel_pub_.publish(vel);
+=======
+//    vel_pub_.publish(vel);
+>>>>>>> 463660c1f3568aa9b7bc8f3c6d0eb6f6b58e2411
 }
 
 int main(int argc, char** argv) {
@@ -52,7 +56,11 @@ int main(int argc, char** argv) {
 
   	while(ros::ok())
 	{
+<<<<<<< HEAD
         elektron_teleop.publish();
+=======
+		elektron_teleop.publish();
+>>>>>>> 463660c1f3568aa9b7bc8f3c6d0eb6f6b58e2411
 
 		ros::spinOnce();
 		loop_rate.sleep();

@@ -99,7 +99,7 @@ include_directories(
 )
 
 ## Declare a cpp library
- add_library(elektron src/elektron.cpp)
+# add_library(elektron src/elektron.cpp)
  add_library(nfv2conf src/nfv2_config.c)
  add_library(serialcomm src/serialcomm/serialcomm.cpp)
  add_library(nfv2 src/nf/nfv2.c)

@@ -99,7 +99,7 @@ void *listener(void *p)
 			//ROS_INFO("RECEIVED %x", rxBuf[rxCnt]);
 			if(NF_Interpreter(&NFComBuf, rxBuf, &rxCnt, rxCommandArray, &rxCommandCnt) > 0)
 			{
-				//ROS_INFO("Message Received!");
+//				ROS_INFO("Message Received!");
 			}
 		//}
 	}
@@ -173,7 +173,7 @@ int main(int argc, char** argv)
 		else
 			ROS_INFO("Listener thread started");
 			
-		ros::Timer timer1 = n.createTimer(ros::Duration(1.0), readDeviceVitalsTimerCallback);
+		ros::Timer timer1 = n.createTimer(ros::Duration(0.1), readDeviceVitalsTimerCallback);
 		
 		while (ros::ok()) 
 		{

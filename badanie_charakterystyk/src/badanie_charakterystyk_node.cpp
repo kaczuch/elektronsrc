@@ -5,6 +5,15 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+// wheel diameter in SI units [m]
+#define WHEEL_DIAM 0.1
+// regulator rate in SI units [Hz]
+#define REGULATOR_RATE 100
+// number of encoder ticks per single wheel rotation
+#define ENC_TICKS 20000
+
+#define MAX_PWM 32767
+
 class badanie {
 private:
 	geometry_msgs::Twist vel_;
@@ -37,7 +46,7 @@ int main(int argc, char** argv) {
         ros::init(argc, argv, "elektron_teleop_keyboard");
         puts("moving robot set parameter to percent of PWM");
         puts("------set-PWM-value---------------------");
-	std::cin>>procent
+        std::cin>>procent;
         ElektronTeleopKeyboard tpk;
         tpk.init();
 
@@ -66,6 +75,7 @@ void ElektronTeleopKeyboard::keyboardLoop() {
 
 	vel_.linear.x = 0;
 	vel_angular.z=0;
+    double vel = (procent/100)*MAX_PWM;
 	for(;;) {
 
                // dirty = false;
@@ -75,8 +85,7 @@ void ElektronTeleopKeyboard::keyboardLoop() {
                         exit(-1);
                 }
 
-                
-                
+                vel_.linear.x=vel*(2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE)/ENC_TICKS;
 
                 switch (c) {
                 
@@ -89,13 +98,12 @@ void ElektronTeleopKeyboard::keyboardLoop() {
                 }
 
  
-		vel_pub_.publish(vel_
+        vel_pub_.publish(vel_);
 
 
 
-                                                                                      97,0-1        94%
         }
 }
-                                                                                        157,1         Dół
+
 
 

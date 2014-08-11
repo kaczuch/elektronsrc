@@ -12,7 +12,9 @@
 // number of encoder ticks per single wheel rotation
 #define ENC_TICKS 20000
 
-#define MAX_PWM 32767
+#define MAX_PWM 2000 
+
+#define KEYCODE_SPC 0x20
 
 class badanie {
 private:
@@ -35,7 +37,7 @@ public:
 };
 int kfd = 0;
 struct termios cooked, raw;
-
+double procent;
 void quit(int sig) {
         tcsetattr(kfd, TCSANOW, &cooked);
         exit(0);
@@ -46,8 +48,8 @@ int main(int argc, char** argv) {
         ros::init(argc, argv, "elektron_teleop_keyboard");
         puts("moving robot set parameter to percent of PWM");
         puts("------set-PWM-value---------------------");
-        std::cin>>procent;
-        ElektronTeleopKeyboard tpk;
+;
+        badanie tpk;
         tpk.init();
 
         signal(SIGINT, quit);
@@ -56,7 +58,7 @@ int main(int argc, char** argv) {
 
         return (0);
 }
-void ElektronTeleopKeyboard::keyboardLoop() {
+void badanie::keyboardLoop() {
         char c;
         bool dirty = false;
 
@@ -69,25 +71,27 @@ void ElektronTeleopKeyboard::keyboardLoop() {
         raw.c_cc[VEOF] = 2;
         tcsetattr(kfd, TCSANOW, &raw);
 
-        puts("moving robot set parameter to percent of PWM");
-        puts("---------------------------");
+      //  puts("moving robot set parameter to percent of PWM");
+       // puts("---------------------------");
 
+        std::cin>>procent;
 
 	vel_.linear.x = 0;
-	vel_angular.z=0;
-    double vel = (procent/100)*MAX_PWM;
+	vel_.angular.z=0;
+    double vel = (procent/100.0)*MAX_PWM;
+	std::cout<<vel<<std::endl;
 	for(;;) {
 
                // dirty = false;
                 // get the next event from the keyboard
-                if (read(kfd, &c, 1) < 0) {
+       /*         if (read(kfd, &c, 1) < 0) {
                         perror("read():");
                         exit(-1);
                 }
-
+	*/	
                 vel_.linear.x=vel*(2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE)/ENC_TICKS;
-
-                switch (c) {
+	//	std::cout<<vel_.linear.x<<std::endl;
+          /*      switch (c) {
                 
                 case KEYCODE_SPC:
                         vel_.linear.x = 0;
@@ -97,8 +101,8 @@ void ElektronTeleopKeyboard::keyboardLoop() {
                         break;
                 }
 
- 
-        vel_pub_.publish(vel_);
+ */
+	        vel_pub_.publish(vel_);
 
 
 

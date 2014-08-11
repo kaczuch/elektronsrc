@@ -67,7 +67,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
-#   DEPENDENCIES
+ #  DEPENDENCIES
 #   geometry_msgs#   nav_msgs
 # )
 
@@ -104,16 +104,16 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-# add_executable(badanie_charakterystyk_node src/badanie_charakterystyk_node.cpp)
+ add_executable(badanie_charakterystyk_node src/badanie_charakterystyk_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(badanie_charakterystyk_node badanie_charakterystyk_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(badanie_charakterystyk_node
-#   ${catkin_LIBRARIES}
-# )
+ target_link_libraries(badanie_charakterystyk_node
+   ${catkin_LIBRARIES}
+ )
 
 #############
 ## Install ##

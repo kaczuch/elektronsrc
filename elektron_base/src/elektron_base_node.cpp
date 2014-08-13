@@ -190,7 +190,7 @@ int main(int argc, char** argv)
 				// Send command frame to Elektron
 				CommPort->write(txBuf, txCnt);
 				timeoutCount = 0;
-			}else
+	/*		}else
 			{
 				if(timeoutCount < TIMEOUT)
 				{
@@ -213,7 +213,7 @@ int main(int argc, char** argv)
 					commandCnt = 0;
 				}
 			}
-
+*/
 			x = 0;
 			y = 0;
 			th = 0;

@@ -10,7 +10,7 @@
 // regulator rate in SI units [Hz]
 #define REGULATOR_RATE 100
 // number of encoder ticks per single wheel rotation
-#define ENC_TICKS 20000
+#define ENC_TICKS 5000
 
 #define MAX_PWM 2000 
 

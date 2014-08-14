@@ -23,7 +23,7 @@
 #define MAX_VEL 100000
 
 // number of encoder ticks per single wheel rotation
-#define ENC_TICKS 20000
+#define ENC_TICKS 5000
 
 ros::Time cmd_time;
 
@@ -45,7 +45,6 @@ void readDeviceVitalsTimerCallback(const ros::TimerEvent&)
 {
 	commandArray[commandCnt++] = NF_COMMAND_ReadDeviceVitals;
 	commandArray[commandCnt++] = NF_COMMAND_ReadDrivesPosition;
-	ROS_INFO("Wheel speed: %d, %d", NFComBuf.ReadDrivesPosition.data[0], NFComBuf.ReadDrivesPosition.data[1]);
 }
 
 void twistCallback(const geometry_msgs::TwistConstPtr& msg) 
@@ -99,6 +98,7 @@ void *listener(void *p)
 			//ROS_INFO("RECEIVED %x", rxBuf[rxCnt]);
 			if(NF_Interpreter(&NFComBuf, rxBuf, &rxCnt, rxCommandArray, &rxCommandCnt) > 0)
 			{
+				ROS_INFO("Wheel speed: %d, %d", NFComBuf.ReadDrivesPosition.data[0], NFComBuf.ReadDrivesPosition.data[1]);
 //				ROS_INFO("Message Received!");
 			}
 		//}
@@ -173,7 +173,7 @@ int main(int argc, char** argv)
 		else
 			ROS_INFO("Listener thread started");
 			
-		ros::Timer timer1 = n.createTimer(ros::Duration(0.1), readDeviceVitalsTimerCallback);
+		ros::Timer timer1 = n.createTimer(ros::Duration(0.01), readDeviceVitalsTimerCallback);
 		
 		while (ros::ok()) 
 		{
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
 				// Send command frame to Elektron
 				CommPort->write(txBuf, txCnt);
 				timeoutCount = 0;
-	/*		}else
+			}/*else
 			{
 				if(timeoutCount < TIMEOUT)
 				{

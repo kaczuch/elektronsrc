@@ -10,9 +10,9 @@
 // regulator rate in SI units [Hz]
 #define REGULATOR_RATE 100
 // number of encoder ticks per single wheel rotation
-#define ENC_TICKS 20000
+#define ENC_TICKS 5000
 
-#define MAX_PWM 2000 
+#define MAX_PWM 180 
 
 #define KEYCODE_SPC 0x20
 
@@ -83,23 +83,41 @@ void badanie::keyboardLoop() {
     double veln=0;
     double secs=0;
     double secso=ros::Time::now().toSec();
+	double timeflat=0;
     bool rising=true;
+    bool flat=false;
+    bool falling=false;
     for(;;) {
         double secs = ros::Time::now().toSec();
         double dt=secs-secso;
-
-                if(rising==true){
-                    veln+=vel*dt;
-                    if(veln>=vel){
-                        rising=false;
-                    }
-                }else{
-                    veln-=vel*dt;// w sekunde powinien wzrosnac do zadanej
-                    if(veln<=0){
-                        rising=true;
-                    }
-                }
-
+		
+	if(rising==true){
+		veln+=vel*dt*10;
+		if(veln>=vel){
+			rising=false;
+			flat=true;
+			timeflat=secs;
+		}
+	}
+	if(falling==true){
+		veln-=vel*dt*10;
+		if(veln<=0){
+			veln=0;
+			flat=true;
+			falling=false;
+			timeflat=secs;
+		}
+	}
+	if(flat==true){
+		if(secs-timeflat>1.0){
+			flat=false;
+			if(veln==0){
+				rising=true;
+			}else{
+				falling=true;
+			}
+		}
+	}
                 vel_.linear.x=veln*(2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE)/ENC_TICKS;
 
 	        vel_pub_.publish(vel_);

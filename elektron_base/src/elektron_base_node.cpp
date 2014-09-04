@@ -98,8 +98,11 @@ void *listener(void *p)
 			//ROS_INFO("RECEIVED %x", rxBuf[rxCnt]);
 			if(NF_Interpreter(&NFComBuf, rxBuf, &rxCnt, rxCommandArray, &rxCommandCnt) > 0)
 			{
-				ROS_INFO("Wheel speed: %d, %d", NFComBuf.ReadDrivesPosition.data[0], NFComBuf.ReadDrivesPosition.data[1]);
-//				ROS_INFO("Message Received!");
+				if(NFComBuf.ReadDrivesPosition.updated){
+					ROS_INFO("Wheel speed: %d, %d", NFComBuf.ReadDrivesPosition.data[0], NFComBuf.ReadDrivesPosition.data[1]);
+					NFComBuf.ReadDrivesPosition.updated=0;
+				}
+				//ROS_INFO("Message Received!");
 			}
 		//}
 	}

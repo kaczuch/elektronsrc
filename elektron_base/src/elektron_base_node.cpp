@@ -37,10 +37,11 @@ uint8_t commandArray[256];	//tablica polecen do sterownika
 uint8_t commandCnt;		//stopien zapelnienia tablicy polecen do sterownika
 uint8_t rxCommandArray[256];	
 uint8_t rxCommandCnt;		
-
 int timeoutCount = 0;
 int left = 0;
 
+
+bool wyjscie=false;
 void readDeviceVitalsTimerCallback(const ros::TimerEvent&) 
 {
 	commandArray[commandCnt++] = NF_COMMAND_ReadDeviceVitals;
@@ -78,6 +79,7 @@ void twistCallback(const geometry_msgs::TwistConstPtr& msg)
 	{
 		left = lvel;
 		ROS_INFO("Added SetDrivesSpeed Command %d, %d", NFComBuf.SetDrivesSpeed.data[0], NFComBuf.SetDrivesSpeed.data[1]);
+		
 	}
 	
 	NFComBuf.SetDrivesMode.data[0] = NF_DrivesMode_SPEED;
@@ -100,7 +102,9 @@ void *listener(void *p)
 			{
 				if(NFComBuf.ReadDrivesPosition.updated){
 					ROS_INFO("Wheel speed: %d, %d", NFComBuf.ReadDrivesPosition.data[0], NFComBuf.ReadDrivesPosition.data[1]);
-					NFComBuf.ReadDrivesPosition.updated=0;
+
+
+				NFComBuf.ReadDrivesPosition.updated=0;
 				}
 				//ROS_INFO("Message Received!");
 			}
@@ -176,7 +180,7 @@ int main(int argc, char** argv)
 		else
 			ROS_INFO("Listener thread started");
 			
-		ros::Timer timer1 = n.createTimer(ros::Duration(0.01), readDeviceVitalsTimerCallback);
+		ros::Timer timer1 = n.createTimer(ros::Duration(0.1), readDeviceVitalsTimerCallback);
 		
 		while (ros::ok()) 
 		{
@@ -269,6 +273,5 @@ int main(int argc, char** argv)
 			loop_rate.sleep();
 		}
 	} 
-
 	return 0;
 }

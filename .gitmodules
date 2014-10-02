@@ -1,0 +1,6 @@
+[submodule "elektron_base/src/nf"]
+	path = elektron_base/src/nf
+	url = https://github.com/mwalecki/nf.git
+[submodule "elektron_base/src/serialcomm"]
+	path = elektron_base/src/serialcomm
+	url = https://github.com/mwalecki/serialcomm.git

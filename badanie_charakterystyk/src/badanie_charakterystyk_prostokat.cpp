@@ -12,7 +12,7 @@
 // number of encoder ticks per single wheel rotation
 #define ENC_TICKS 5000
 
-#define MAX_PWM 2000 
+#define MAX_PWM 180 
 
 #define KEYCODE_SPC 0x20
 
@@ -80,31 +80,39 @@ void badanie::keyboardLoop() {
 	vel_.angular.z=0;
     double vel = procent;
 	std::cout<<vel<<std::endl;
-	for(;;) {
+    double veln=0;
+    double secs=0;
+    double secso=ros::Time::now().toSec();
+	double timeflat=0;
+    bool rising=true;
+    bool flat=false;
+    bool falling=false;
+    for(;;) {
+        double secs = ros::Time::now().toSec();
+        double dt=secs-secso;
+		
+	if(rising==true){
+		veln=vel;
+		if(secs-timeflat>=4.0){
+			rising=false;
+			falling=true;
+			timeflat=secs;
+		}
+	}
+	if(falling==true){
+		veln=-vel;
+		if(secs-timeflat>=4.0){
+			veln=0;
+			rising=true;
+			falling=false;
+			timeflat=secs;
+		}
+	}
+                vel_.linear.x=veln*(2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE)/ENC_TICKS;
 
-               // dirty = false;
-                // get the next event from the keyboard
-       /*         if (read(kfd, &c, 1) < 0) {
-                        perror("read():");
-                        exit(-1);
-                }
-	*/	
-                vel_.linear.x=vel*(2 * 3.14 * WHEEL_DIAM * REGULATOR_RATE)/ENC_TICKS;
-	//	std::cout<<vel_.linear.x<<std::endl;
-          /*      switch (c) {
-                
-                case KEYCODE_SPC:
-                        vel_.linear.x = 0;
-                        vel_.angular.z = 0;
-                        dirty = true;
-                //      std::cout << "SPACE"<<std::endl;
-                        break;
-                }
-
- */
 	        vel_pub_.publish(vel_);
 
-
+        secso= secs;
 
         }
 }

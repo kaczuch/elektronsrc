@@ -107,6 +107,7 @@ include_directories(
  add_executable(badanie_charakterystyk_node src/badanie_charakterystyk_node.cpp)
  add_executable(badanie_charakterystyk_rampa src/badanie_charakterystyk_rampa.cpp)
  add_executable(badanie_charakterystyk_skret src/badanie_charakterystyk_skret.cpp)
+ add_executable(badanie_charakterystyk_prostokat stc/badanie_charakterystyk_prostokat.cpp
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(badanie_charakterystyk_node badanie_charakterystyk_generate_messages_cpp)

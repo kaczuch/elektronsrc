@@ -106,7 +106,7 @@ include_directories(
 ## Declare a cpp executable
  add_executable(badanie_charakterystyk_node src/badanie_charakterystyk_node.cpp)
  add_executable(badanie_charakterystyk_rampa src/badanie_charakterystyk_rampa.cpp)
-
+ add_executable(badanie_charakterystyk_skret src/badanie_charakterystyk_skret.cpp)
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(badanie_charakterystyk_node badanie_charakterystyk_generate_messages_cpp)
@@ -118,7 +118,9 @@ include_directories(
 target_link_libraries(badanie_charakterystyk_rampa
    ${catkin_LIBRARIES}
  )
-
+target_link_libraries(badanie_charakterystyk_skret
+   ${catkin_LIBRARIES}
+ )
 #############
 ## Install ##
 #############

@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <geometry_msgs/Twist.h>
-
+#include <ros/console.h>
 class ElektronTeleopJoy {
 public:
 	ElektronTeleopJoy();
@@ -23,8 +23,8 @@ private:
 
 ElektronTeleopJoy::ElektronTeleopJoy() {
 	nh_.param("axis_linear", linear_, 1);
-	nh_.param("axis_angular", angular_, 0);
-	nh_.param("scale_angular", a_scale_, 1.0);
+	nh_.param("axis_angular", angular_, 2);
+	nh_.param("scale_angular", a_scale_, 1.00);
 	nh_.param("scale_linear", l_scale_, 0.23);
 
 	vel_pub_ = nh_.advertise<geometry_msgs::Twist> ("cmd_vel", 1);
